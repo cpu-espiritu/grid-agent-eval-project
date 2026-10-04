@@ -11,8 +11,9 @@ __pycache__/
 # Secrets
 .env
 
-# Database files
+# Data files
 grid.duckdb
+data/raw/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -232,3 +233,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Claude files
+CLAUDE.local.md
+CLAUDE.md
