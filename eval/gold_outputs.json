@@ -1,0 +1,773 @@
+{
+  "meta": {
+    "git": {
+      "sha": "bc5582ad2b4f74421a97ff2d639a3473a8f7e487",
+      "dirty": true
+    },
+    "duckdb_version": "1.5.6",
+    "raw_data_sha256": "e0f7aef4231cdd57164d8b38194f9e6ca9d478b0cae177133b667020b92253ef",
+    "raw_file_count": 26,
+    "questions_sha256": "b6694449653fdb02ee57eaf362f2b042b593f70cc29c54ff56c67c7bb30fa739",
+    "date_range_utc": [
+      "2025-01-01T00:00:00+00:00",
+      "2026-01-01T00:00:00+00:00"
+    ]
+  },
+  "results": [
+    {
+      "id": "E01",
+      "category": "easy",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT actual_gco2_per_kwh FROM carbon_intensity\nWHERE period_start_utc = TIMESTAMP '2025-01-15 12:00'\n",
+          "expected": 225,
+          "columns": [
+            "actual_gco2_per_kwh"
+          ],
+          "rows": [
+            [
+              225
+            ]
+          ],
+          "value": 225,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "category": "easy",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*) FROM carbon_intensity WHERE intensity_index = 'very high'\n",
+          "expected": 371,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              371
+            ]
+          ],
+          "value": 371,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "category": "easy",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT max(actual_gco2_per_kwh) FROM carbon_intensity\n",
+          "expected": 293,
+          "columns": [
+            "max(actual_gco2_per_kwh)"
+          ],
+          "rows": [
+            [
+              293
+            ]
+          ],
+          "value": 293,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "category": "easy",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT percentage FROM generation_mix\nWHERE fuel = 'wind' AND period_start_utc = TIMESTAMP '2025-02-03 18:00'\n",
+          "expected": 39.0,
+          "columns": [
+            "percentage"
+          ],
+          "rows": [
+            [
+              39.0
+            ]
+          ],
+          "value": 39.0,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "category": "easy",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT forecast_gco2_per_kwh FROM carbon_intensity\nWHERE period_start_utc = TIMESTAMP '2025-03-10 08:30'\n",
+          "expected": 177,
+          "columns": [
+            "forecast_gco2_per_kwh"
+          ],
+          "rows": [
+            [
+              177
+            ]
+          ],
+          "value": 177,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "category": "easy",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*) FROM carbon_intensity WHERE actual_gco2_per_kwh < 50\n",
+          "expected": 782,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              782
+            ]
+          ],
+          "value": 782,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A01",
+      "category": "aggregation",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity\n",
+          "expected": 129.168,
+          "columns": [
+            "avg(actual_gco2_per_kwh)"
+          ],
+          "rows": [
+            [
+              129.168093607
+            ]
+          ],
+          "value": 129.168093607,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A02",
+      "category": "aggregation",
+      "answer_type": "text",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT monthname(timezone('Europe/London', timezone('UTC', period_start_utc))) AS m\nFROM carbon_intensity GROUP BY m ORDER BY avg(actual_gco2_per_kwh) LIMIT 1\n",
+          "expected": "June",
+          "columns": [
+            "m"
+          ],
+          "rows": [
+            [
+              "June"
+            ]
+          ],
+          "value": "June",
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A03",
+      "category": "aggregation",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(percentage) FROM generation_mix WHERE fuel = 'wind'\n",
+          "expected": 32.102,
+          "columns": [
+            "avg(percentage)"
+          ],
+          "rows": [
+            [
+              32.10185778
+            ]
+          ],
+          "value": 32.10185778,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A04",
+      "category": "aggregation",
+      "answer_type": "list",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT fuel FROM generation_mix GROUP BY fuel ORDER BY avg(percentage) DESC LIMIT 3\n",
+          "expected": [
+            "wind",
+            "gas",
+            "nuclear"
+          ],
+          "columns": [
+            "fuel"
+          ],
+          "rows": [
+            [
+              "wind"
+            ],
+            [
+              "gas"
+            ],
+            [
+              "nuclear"
+            ]
+          ],
+          "value": [
+            "wind",
+            "gas",
+            "nuclear"
+          ],
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A05",
+      "category": "aggregation",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*) FROM (\n  SELECT CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) AS d\n  FROM carbon_intensity GROUP BY d HAVING avg(actual_gco2_per_kwh) > 200\n)\n",
+          "expected": 29,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              29
+            ]
+          ],
+          "value": 29,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "A06",
+      "category": "aggregation",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(abs(forecast_gco2_per_kwh - actual_gco2_per_kwh)) FROM carbon_intensity\n",
+          "expected": 9.282,
+          "columns": [
+            "avg(abs((forecast_gco2_per_kwh - actual_gco2_per_kwh)))"
+          ],
+          "rows": [
+            [
+              9.281798936
+            ]
+          ],
+          "value": 9.281798936,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J01",
+      "category": "joins",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(i.actual_gco2_per_kwh)\nFROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)\nWHERE g.fuel = 'wind' AND g.percentage > 50\n",
+          "expected": 65.254,
+          "columns": [
+            "avg(i.actual_gco2_per_kwh)"
+          ],
+          "rows": [
+            [
+              65.253879578
+            ]
+          ],
+          "value": 65.253879578,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J02",
+      "category": "joins",
+      "answer_type": "text",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT g.fuel\nFROM generation_mix g JOIN carbon_intensity i USING (period_start_utc)\nWHERE i.intensity_index = 'very high'\nGROUP BY g.fuel ORDER BY avg(g.percentage) DESC LIMIT 1\n",
+          "expected": "gas",
+          "columns": [
+            "fuel"
+          ],
+          "rows": [
+            [
+              "gas"
+            ]
+          ],
+          "value": "gas",
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J03",
+      "category": "joins",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": "earliest of the tied half-hours (06:00)",
+          "gold_sql": "SELECT g.percentage\nFROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)\nWHERE g.fuel = 'gas'\nORDER BY i.actual_gco2_per_kwh DESC, i.period_start_utc ASC LIMIT 1\n",
+          "expected": 72.0,
+          "columns": [
+            "percentage"
+          ],
+          "rows": [
+            [
+              72.0
+            ]
+          ],
+          "value": 72.0,
+          "status": "match"
+        },
+        {
+          "interpretation": "latest of the tied half-hours (06:30)",
+          "gold_sql": "SELECT g.percentage\nFROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)\nWHERE g.fuel = 'gas'\nORDER BY i.actual_gco2_per_kwh DESC, i.period_start_utc DESC LIMIT 1\n",
+          "expected": 72.1,
+          "columns": [
+            "percentage"
+          ],
+          "rows": [
+            [
+              72.1
+            ]
+          ],
+          "value": 72.1,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J04",
+      "category": "joins",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(g.percentage)\nFROM generation_mix g JOIN carbon_intensity i USING (period_start_utc)\nWHERE g.fuel = 'wind' AND i.intensity_index = 'very low'\n",
+          "expected": 56.029,
+          "columns": [
+            "avg(g.percentage)"
+          ],
+          "rows": [
+            [
+              56.028571429
+            ]
+          ],
+          "value": 56.028571429,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J05",
+      "category": "joins",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*)\nFROM generation_mix w\nJOIN generation_mix g ON g.period_start_utc = w.period_start_utc AND g.fuel = 'gas'\nJOIN generation_mix n ON n.period_start_utc = w.period_start_utc AND n.fuel = 'nuclear'\nWHERE w.fuel = 'wind' AND w.percentage > g.percentage + n.percentage\n",
+          "expected": 6870,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              6870
+            ]
+          ],
+          "value": 6870,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "J06",
+      "category": "joins",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*) FROM carbon_intensity i\nWHERE NOT EXISTS (SELECT 1 FROM generation_mix g WHERE g.period_start_utc = i.period_start_utc)\n",
+          "expected": 26,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              26
+            ]
+          ],
+          "value": 26,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "category": "date_handling",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT actual_gco2_per_kwh FROM carbon_intensity\nWHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-06-21 16:30'\n",
+          "expected": 94,
+          "columns": [
+            "actual_gco2_per_kwh"
+          ],
+          "rows": [
+            [
+              94
+            ]
+          ],
+          "value": 94,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "category": "date_handling",
+      "answer_type": "date",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d\nFROM carbon_intensity GROUP BY d ORDER BY avg(actual_gco2_per_kwh) LIMIT 1\n",
+          "expected": "2025-05-29",
+          "columns": [
+            "d"
+          ],
+          "rows": [
+            [
+              "2025-05-29"
+            ]
+          ],
+          "value": "2025-05-29",
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "category": "date_handling",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT count(*) FROM carbon_intensity\nWHERE CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) = DATE '2025-03-30'\n",
+          "expected": 46,
+          "columns": [
+            "count_star()"
+          ],
+          "rows": [
+            [
+              46
+            ]
+          ],
+          "value": 46,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "category": "date_handling",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity\nWHERE CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) = DATE '2025-10-26'\n",
+          "expected": 53.1,
+          "columns": [
+            "avg(actual_gco2_per_kwh)"
+          ],
+          "rows": [
+            [
+              53.1
+            ]
+          ],
+          "value": 53.1,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "category": "date_handling",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity\nWHERE month(timezone('Europe/London', timezone('UTC', period_start_utc))) = 7\n  AND hour(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (17, 18)\n",
+          "expected": 144.798,
+          "columns": [
+            "avg(actual_gco2_per_kwh)"
+          ],
+          "rows": [
+            [
+              144.798387097
+            ]
+          ],
+          "value": 144.798387097,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "category": "date_handling",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": "SELECT avg(actual_gco2_per_kwh) FILTER (WHERE dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) NOT IN (0, 6))\n     - avg(actual_gco2_per_kwh) FILTER (WHERE dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (0, 6))\nFROM carbon_intensity\n",
+          "expected": 22.343,
+          "columns": [
+            "(avg(actual_gco2_per_kwh) FILTER (WHERE (dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) NOT IN (0, 6))) - avg(actual_gco2_per_kwh) FILTER (WHERE (dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (0, 6))))"
+          ],
+          "rows": [
+            [
+              22.342736885
+            ]
+          ],
+          "value": 22.342736885,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M01",
+      "category": "ambiguous",
+      "answer_type": "date",
+      "answers": [
+        {
+          "interpretation": "lowest average actual carbon intensity",
+          "gold_sql": "SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d\nFROM carbon_intensity GROUP BY d ORDER BY avg(actual_gco2_per_kwh) LIMIT 1\n",
+          "expected": "2025-05-29",
+          "columns": [
+            "d"
+          ],
+          "rows": [
+            [
+              "2025-05-29"
+            ]
+          ],
+          "value": "2025-05-29",
+          "status": "match"
+        },
+        {
+          "interpretation": "highest average zero-carbon share (wind + solar + hydro + nuclear)",
+          "gold_sql": "SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d\nFROM (\n  SELECT period_start_utc, sum(percentage) AS share FROM generation_mix\n  WHERE fuel IN ('wind', 'solar', 'hydro', 'nuclear') GROUP BY period_start_utc\n) GROUP BY d ORDER BY avg(share) DESC LIMIT 1\n",
+          "expected": "2025-05-25",
+          "columns": [
+            "d"
+          ],
+          "rows": [
+            [
+              "2025-05-25"
+            ]
+          ],
+          "value": "2025-05-25",
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "category": "ambiguous",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": "wind + solar + hydro",
+          "gold_sql": "SELECT avg(share) FROM (\n  SELECT period_start_utc, sum(percentage) AS share FROM generation_mix\n  WHERE fuel IN ('wind', 'solar', 'hydro') GROUP BY period_start_utc\n)\n",
+          "expected": 38.408,
+          "columns": [
+            "avg(\"share\")"
+          ],
+          "rows": [
+            [
+              38.408088487
+            ]
+          ],
+          "value": 38.408088487,
+          "status": "match"
+        },
+        {
+          "interpretation": "wind + solar + hydro + biomass (UK government definition includes bioenergy)",
+          "gold_sql": "SELECT avg(share) FROM (\n  SELECT period_start_utc, sum(percentage) AS share FROM generation_mix\n  WHERE fuel IN ('wind', 'solar', 'hydro', 'biomass') GROUP BY period_start_utc\n)\n",
+          "expected": 46.036,
+          "columns": [
+            "avg(\"share\")"
+          ],
+          "rows": [
+            [
+              46.036012347
+            ]
+          ],
+          "value": 46.036012347,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "category": "ambiguous",
+      "answer_type": "integer",
+      "answers": [
+        {
+          "interpretation": "actual",
+          "gold_sql": "SELECT actual_gco2_per_kwh FROM carbon_intensity\nWHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-08-01 18:00'\n",
+          "expected": 92,
+          "columns": [
+            "actual_gco2_per_kwh"
+          ],
+          "rows": [
+            [
+              92
+            ]
+          ],
+          "value": 92,
+          "status": "match"
+        },
+        {
+          "interpretation": "forecast",
+          "gold_sql": "SELECT forecast_gco2_per_kwh FROM carbon_intensity\nWHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-08-01 18:00'\n",
+          "expected": 67,
+          "columns": [
+            "forecast_gco2_per_kwh"
+          ],
+          "rows": [
+            [
+              67
+            ]
+          ],
+          "value": 67,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "category": "ambiguous",
+      "answer_type": "datetime",
+      "answers": [
+        {
+          "interpretation": "half-hour with the lowest actual carbon intensity",
+          "gold_sql": "SELECT strftime(timezone('Europe/London', timezone('UTC', period_start_utc)), '%Y-%m-%d %H:%M')\nFROM carbon_intensity ORDER BY actual_gco2_per_kwh LIMIT 1\n",
+          "expected": "2025-05-29 12:00",
+          "columns": [
+            "strftime(timezone('Europe/London', timezone('UTC', period_start_utc)), '%Y-%m-%d %H:%M')"
+          ],
+          "rows": [
+            [
+              "2025-05-29 12:00"
+            ]
+          ],
+          "value": "2025-05-29 12:00",
+          "status": "match"
+        },
+        {
+          "interpretation": "clock hour with the lowest average actual carbon intensity",
+          "gold_sql": "SELECT strftime(date_trunc('hour', timezone('Europe/London', timezone('UTC', period_start_utc))), '%Y-%m-%d %H:%M') AS h\nFROM carbon_intensity GROUP BY h ORDER BY avg(actual_gco2_per_kwh) LIMIT 1\n",
+          "expected": "2025-05-29 12:00",
+          "columns": [
+            "h"
+          ],
+          "rows": [
+            [
+              "2025-05-29 12:00"
+            ]
+          ],
+          "value": "2025-05-29 12:00",
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "category": "ambiguous",
+      "answer_type": "number",
+      "answers": [
+        {
+          "interpretation": "meteorological summer (June to August)",
+          "gold_sql": "SELECT avg(percentage) FROM generation_mix\nWHERE fuel = 'gas' AND month(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (6, 7, 8)\n",
+          "expected": 24.267,
+          "columns": [
+            "avg(percentage)"
+          ],
+          "rows": [
+            [
+              24.267264065
+            ]
+          ],
+          "value": 24.267264065,
+          "status": "match"
+        },
+        {
+          "interpretation": "astronomical summer (21 June to 21 September)",
+          "gold_sql": "SELECT avg(percentage) FROM generation_mix\nWHERE fuel = 'gas'\n  AND timezone('Europe/London', timezone('UTC', period_start_utc)) >= TIMESTAMP '2025-06-21'\n  AND timezone('Europe/London', timezone('UTC', period_start_utc)) <  TIMESTAMP '2025-09-22'\n",
+          "expected": 23.899,
+          "columns": [
+            "avg(percentage)"
+          ],
+          "rows": [
+            [
+              23.898675943
+            ]
+          ],
+          "value": 23.898675943,
+          "status": "match"
+        }
+      ]
+    },
+    {
+      "id": "M06",
+      "category": "ambiguous",
+      "answer_type": "unanswerable",
+      "answers": [
+        {
+          "interpretation": null,
+          "gold_sql": null,
+          "expected": null,
+          "status": "unanswerable"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+# evaluation test set: 30 questions, 6 per category.
+
+# each question:
+#   answer_type: number | integer | text | date | datetime | list | unanswerable
+#   tolerance:   absolute tolerance for number answers
+#   answers:     one entry per accepted interpretation (ambiguous questions have several)
+#   expected:    produced once by running gold_sql; verified by eval/check_gold.py
+
+questions:
+  # ---------------------------------------------------------------- easy
+  - id: E01
+    category: easy
+    question: What was the carbon intensity at 12:00 on 15 January 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT actual_gco2_per_kwh FROM carbon_intensity
+          WHERE period_start_utc = TIMESTAMP '2025-01-15 12:00'
+        expected: 225
+
+  - id: E02
+    category: easy
+    question: How many "very high" carbon intensity index half-hours in 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT count(*) FROM carbon_intensity WHERE intensity_index = 'very high'
+        expected: 371
+
+  - id: E03
+    category: easy
+    question: What was the highest carbon intensity in 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT max(actual_gco2_per_kwh) FROM carbon_intensity
+        expected: 293
+
+  - id: E04
+    category: easy
+    question: How much generation came from wind at 18:00 on 3 February 2025?
+    answer_type: number
+    tolerance: 0.05
+    answers:
+      - gold_sql: |
+          SELECT percentage FROM generation_mix
+          WHERE fuel = 'wind' AND period_start_utc = TIMESTAMP '2025-02-03 18:00'
+        expected: 39.0
+
+  - id: E05
+    category: easy
+    question: What was the forecast carbon intensity for 08:30 on 10 March 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT forecast_gco2_per_kwh FROM carbon_intensity
+          WHERE period_start_utc = TIMESTAMP '2025-03-10 08:30'
+        expected: 177
+
+  - id: E06
+    category: easy
+    question: How many half-hours was actual carbon intensity below 50 gCO2/kWh in 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT count(*) FROM carbon_intensity WHERE actual_gco2_per_kwh < 50
+        expected: 782
+
+  # ---------------------------------------------------------------- aggregation
+  - id: A01
+    category: aggregation
+    question: What was average actual carbon intensity across 2025?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - gold_sql: |
+          SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity
+        expected: 129.168
+
+  - id: A02
+    category: aggregation
+    question: Which month had the lowest average actual carbon intensity in 2025?
+    answer_type: text
+    answers:
+      - gold_sql: |
+          SELECT monthname(timezone('Europe/London', timezone('UTC', period_start_utc))) AS m
+          FROM carbon_intensity GROUP BY m ORDER BY avg(actual_gco2_per_kwh) LIMIT 1
+        expected: June
+
+  - id: A03
+    category: aggregation
+    question: What was the average share of generation from wind in 2025?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - gold_sql: |
+          SELECT avg(percentage) FROM generation_mix WHERE fuel = 'wind'
+        expected: 32.102
+
+  - id: A04
+    category: aggregation
+    question: What were the top three fuels by average share of generation in 2025, from highest to lowest?
+    answer_type: list
+    answers:
+      - gold_sql: |
+          SELECT fuel FROM generation_mix GROUP BY fuel ORDER BY avg(percentage) DESC LIMIT 3
+        expected: [wind, gas, nuclear]
+
+  - id: A05
+    category: aggregation
+    question: How many days was the average actual carbon intensity above 200 gCO2/kWh in 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT count(*) FROM (
+            SELECT CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) AS d
+            FROM carbon_intensity GROUP BY d HAVING avg(actual_gco2_per_kwh) > 200
+          )
+        expected: 29
+
+  - id: A06
+    category: aggregation
+    question: What was the average difference between forecast carbon intensity and the actual in 2025?
+    answer_type: number
+    tolerance: 0.05
+    notes: Mean absolute error. A signed mean (forecast minus actual) is a misread question.
+    answers:
+      - gold_sql: |
+          SELECT avg(abs(forecast_gco2_per_kwh - actual_gco2_per_kwh)) FROM carbon_intensity
+        expected: 9.282
+
+  # ---------------------------------------------------------------- joins
+  - id: J01
+    category: joins
+    question: What was the average actual carbon intensity in half-hours when wind provided more than half of generation?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - gold_sql: |
+          SELECT avg(i.actual_gco2_per_kwh)
+          FROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)
+          WHERE g.fuel = 'wind' AND g.percentage > 50
+        expected: 65.254
+
+  - id: J02
+    category: joins
+    question: Which fuel had the largest average share of generation during half-hours rated "very high" carbon intensity?
+    answer_type: text
+    answers:
+      - gold_sql: |
+          SELECT g.fuel
+          FROM generation_mix g JOIN carbon_intensity i USING (period_start_utc)
+          WHERE i.intensity_index = 'very high'
+          GROUP BY g.fuel ORDER BY avg(g.percentage) DESC LIMIT 1
+        expected: gas
+
+  - id: J03
+    category: joins
+    question: What share of generation came from gas during the half-hour with the highest actual carbon intensity in 2025?
+    answer_type: number
+    tolerance: 0.05
+    notes: Two half-hours tie at 293 gCO2/kWh (22 Jan 06:00 and 06:30), so either gas share is accepted.
+    answers:
+      - interpretation: earliest of the tied half-hours (06:00)
+        gold_sql: |
+          SELECT g.percentage
+          FROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)
+          WHERE g.fuel = 'gas'
+          ORDER BY i.actual_gco2_per_kwh DESC, i.period_start_utc ASC LIMIT 1
+        expected: 72.0
+      - interpretation: latest of the tied half-hours (06:30)
+        gold_sql: |
+          SELECT g.percentage
+          FROM carbon_intensity i JOIN generation_mix g USING (period_start_utc)
+          WHERE g.fuel = 'gas'
+          ORDER BY i.actual_gco2_per_kwh DESC, i.period_start_utc DESC LIMIT 1
+        expected: 72.1
+
+  - id: J04
+    category: joins
+    question: What was the average wind share during half-hours rated "very low" carbon intensity?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - gold_sql: |
+          SELECT avg(g.percentage)
+          FROM generation_mix g JOIN carbon_intensity i USING (period_start_utc)
+          WHERE g.fuel = 'wind' AND i.intensity_index = 'very low'
+        expected: 56.029
+
+  - id: J05
+    category: joins
+    question: How many half-hours did wind provide a larger share than gas and nuclear combined in 2025?
+    answer_type: integer
+    answers:
+      - gold_sql: |
+          SELECT count(*)
+          FROM generation_mix w
+          JOIN generation_mix g ON g.period_start_utc = w.period_start_utc AND g.fuel = 'gas'
+          JOIN generation_mix n ON n.period_start_utc = w.period_start_utc AND n.fuel = 'nuclear'
+          WHERE w.fuel = 'wind' AND w.percentage > g.percentage + n.percentage
+        expected: 6870
+
+  - id: J06
+    category: joins
+    question: How many half-hours is the generation mix missing in 2025?
+    answer_type: integer
+    notes: Source API outages on 13 Jan, 11 Aug and 31 Dec. Answerable only by comparing against carbon_intensity (or the expected 17,520 half-hours).
+    answers:
+      - gold_sql: |
+          SELECT count(*) FROM carbon_intensity i
+          WHERE NOT EXISTS (SELECT 1 FROM generation_mix g WHERE g.period_start_utc = i.period_start_utc)
+        expected: 26
+
+  # ---------------------------------------------------------------- date handling
+  - id: D01
+    category: date_handling
+    question: What was the actual carbon intensity at 16:30 on 21 June 2025?
+    answer_type: integer
+    notes: BST. Reading 16:30 as UTC gives 114 (wrong).
+    answers:
+      - gold_sql: |
+          SELECT actual_gco2_per_kwh FROM carbon_intensity
+          WHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-06-21 16:30'
+        expected: 94
+
+  - id: D02
+    category: date_handling
+    question: Which day had the lowest average actual carbon intensity in 2025?
+    answer_type: date
+    answers:
+      - gold_sql: |
+          SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d
+          FROM carbon_intensity GROUP BY d ORDER BY avg(actual_gco2_per_kwh) LIMIT 1
+        expected: "2025-05-29"
+
+  - id: D03
+    category: date_handling
+    question: How many half-hour periods were there on 30 March 2025?
+    answer_type: integer
+    notes: Clocks went forward, so the UK day was 23 hours long. 48 is wrong.
+    answers:
+      - gold_sql: |
+          SELECT count(*) FROM carbon_intensity
+          WHERE CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) = DATE '2025-03-30'
+        expected: 46
+
+  - id: D04
+    category: date_handling
+    question: What was the average actual carbon intensity on 26 October 2025?
+    answer_type: number
+    tolerance: 0.1
+    notes: Clocks went back (25-hour day, 50 periods). The UTC day gives 52.85 (wrong).
+    answers:
+      - gold_sql: |
+          SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity
+          WHERE CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE) = DATE '2025-10-26'
+        expected: 53.1
+
+  - id: D05
+    category: date_handling
+    question: What was the average actual carbon intensity between 17:00 and 19:00 in July 2025?
+    answer_type: number
+    tolerance: 0.1
+    notes: Half-hours starting 17:00 to 18:30 BST. Using UTC hours gives 156.46 (wrong).
+    answers:
+      - gold_sql: |
+          SELECT avg(actual_gco2_per_kwh) FROM carbon_intensity
+          WHERE month(timezone('Europe/London', timezone('UTC', period_start_utc))) = 7
+            AND hour(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (17, 18)
+        expected: 144.798
+
+  - id: D06
+    category: date_handling
+    question: How much lower was the average actual carbon intensity at weekends than on weekdays in 2025?
+    answer_type: number
+    tolerance: 0.2
+    answers:
+      - gold_sql: |
+          SELECT avg(actual_gco2_per_kwh) FILTER (WHERE dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) NOT IN (0, 6))
+               - avg(actual_gco2_per_kwh) FILTER (WHERE dayofweek(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (0, 6))
+          FROM carbon_intensity
+        expected: 22.343
+
+  # ---------------------------------------------------------------- ambiguous
+  - id: M01
+    category: ambiguous
+    question: What was the greenest day of 2025?
+    answer_type: date
+    answers:
+      - interpretation: lowest average actual carbon intensity
+        gold_sql: |
+          SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d
+          FROM carbon_intensity GROUP BY d ORDER BY avg(actual_gco2_per_kwh) LIMIT 1
+        expected: "2025-05-29"
+      - interpretation: highest average zero-carbon share (wind + solar + hydro + nuclear)
+        gold_sql: |
+          SELECT strftime(CAST(timezone('Europe/London', timezone('UTC', period_start_utc)) AS DATE), '%Y-%m-%d') AS d
+          FROM (
+            SELECT period_start_utc, sum(percentage) AS share FROM generation_mix
+            WHERE fuel IN ('wind', 'solar', 'hydro', 'nuclear') GROUP BY period_start_utc
+          ) GROUP BY d ORDER BY avg(share) DESC LIMIT 1
+        expected: "2025-05-25"
+
+  - id: M02
+    category: ambiguous
+    question: What share of UK electricity came from renewables in 2025?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - interpretation: wind + solar + hydro
+        gold_sql: |
+          SELECT avg(share) FROM (
+            SELECT period_start_utc, sum(percentage) AS share FROM generation_mix
+            WHERE fuel IN ('wind', 'solar', 'hydro') GROUP BY period_start_utc
+          )
+        expected: 38.408
+      - interpretation: wind + solar + hydro + biomass (UK government definition includes bioenergy)
+        gold_sql: |
+          SELECT avg(share) FROM (
+            SELECT period_start_utc, sum(percentage) AS share FROM generation_mix
+            WHERE fuel IN ('wind', 'solar', 'hydro', 'biomass') GROUP BY period_start_utc
+          )
+        expected: 46.036
+
+  - id: M03
+    category: ambiguous
+    question: What was the carbon intensity at 6pm on 1 August 2025?
+    answer_type: integer
+    notes: Actual vs forecast not specified. Reading 6pm as UTC gives 104 / 93 (wrong).
+    answers:
+      - interpretation: actual
+        gold_sql: |
+          SELECT actual_gco2_per_kwh FROM carbon_intensity
+          WHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-08-01 18:00'
+        expected: 92
+      - interpretation: forecast
+        gold_sql: |
+          SELECT forecast_gco2_per_kwh FROM carbon_intensity
+          WHERE timezone('Europe/London', timezone('UTC', period_start_utc)) = TIMESTAMP '2025-08-01 18:00'
+        expected: 67
+
+  - id: M04
+    category: ambiguous
+    question: When was the cleanest hour of 2025?
+    answer_type: datetime
+    notes: Both readings land on 12:00 BST on 29 May. Answering 11:00 means UTC was not converted.
+    answers:
+      - interpretation: half-hour with the lowest actual carbon intensity
+        gold_sql: |
+          SELECT strftime(timezone('Europe/London', timezone('UTC', period_start_utc)), '%Y-%m-%d %H:%M')
+          FROM carbon_intensity ORDER BY actual_gco2_per_kwh LIMIT 1
+        expected: "2025-05-29 12:00"
+      - interpretation: clock hour with the lowest average actual carbon intensity
+        gold_sql: |
+          SELECT strftime(date_trunc('hour', timezone('Europe/London', timezone('UTC', period_start_utc))), '%Y-%m-%d %H:%M') AS h
+          FROM carbon_intensity GROUP BY h ORDER BY avg(actual_gco2_per_kwh) LIMIT 1
+        expected: "2025-05-29 12:00"
+
+  - id: M05
+    category: ambiguous
+    question: What was the average share of generation from gas in summer 2025?
+    answer_type: number
+    tolerance: 0.1
+    answers:
+      - interpretation: meteorological summer (June to August)
+        gold_sql: |
+          SELECT avg(percentage) FROM generation_mix
+          WHERE fuel = 'gas' AND month(timezone('Europe/London', timezone('UTC', period_start_utc))) IN (6, 7, 8)
+        expected: 24.267
+      - interpretation: astronomical summer (21 June to 21 September)
+        gold_sql: |
+          SELECT avg(percentage) FROM generation_mix
+          WHERE fuel = 'gas'
+            AND timezone('Europe/London', timezone('UTC', period_start_utc)) >= TIMESTAMP '2025-06-21'
+            AND timezone('Europe/London', timezone('UTC', period_start_utc)) <  TIMESTAMP '2025-09-22'
+        expected: 23.899
+
+  - id: M06
+    category: ambiguous
+    question: How many GWh of electricity did wind generate in 2025?
+    answer_type: unanswerable
+    notes: The data has percentage shares only, not energy. A correct answer says so. Any number is a fail (invented column or made-up conversion).
+    answers:
+      - gold_sql: null
+        expected: null
