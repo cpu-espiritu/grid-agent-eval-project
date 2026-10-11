@@ -28,3 +28,11 @@ Column names have their units, prevents agent from guessing units/timezone incor
 ## 6
 
 Timestamps with no timezone automatically get UTC, DuckDB would default to laptop timezone causing errors to the agents response
+
+## 7
+
+Seperate raw JSON (source of truth), the build (loader) and ground truth (saved gold SQL results), so accuracy is only dependent on model changes
+
+## 8
+
+Model selected is gpt-6-luna
