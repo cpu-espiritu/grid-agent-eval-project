@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "model": "gpt-6-luna",
+    "temperature": null,
+    "prompt_version": "v1",
+    "max_attempts": 3
+  },
+  "git": {
+    "sha": "1175d20dfcea7785b6bc4fd6137be6f86e2436eb",
+    "dirty": true
+  },
+  "agent_code_sha256": "f81230cd757d5df8252f105423a8800d7b67b841377b6ebcf42da8f1c31201cc",
+  "system_prompt_sha256": "dbf7570d53db7bbec12e5e53cd58b38610b8d42eb54b604d9323f1d7566fe7c6",
+  "raw_data_sha256": "e0f7aef4231cdd57164d8b38194f9e6ca9d478b0cae177133b667020b92253ef",
+  "questions_sha256": "b6694449653fdb02ee57eaf362f2b042b593f70cc29c54ff56c67c7bb30fa739",
+  "duckdb_version": "1.5.6",
+  "subset": null
+}

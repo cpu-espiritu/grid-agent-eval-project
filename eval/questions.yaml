@@ -120,10 +120,10 @@ questions:
 
   - id: A06
     category: aggregation
-    question: What was the average difference between forecast carbon intensity and the actual in 2025?
+    question: On average, how far was the forecast carbon intensity from the actual in 2025, in either direction?
     answer_type: number
     tolerance: 0.05
-    notes: Mean absolute error. A signed mean (forecast minus actual) is a misread question.
+    notes: Mean absolute error. A signed mean (forecast minus actual) is a misread question. Reworded 2026-10-11, see DECISIONS.md.
     answers:
       - gold_sql: |
           SELECT avg(abs(forecast_gco2_per_kwh - actual_gco2_per_kwh)) FROM carbon_intensity

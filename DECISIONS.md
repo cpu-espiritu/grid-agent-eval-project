@@ -36,3 +36,9 @@ Seperate raw JSON (source of truth), the build (loader) and ground truth (saved 
 ## 8
 
 Model selected is gpt-6-luna
+
+## 9
+
+A06 reworded (2026-10-11) -> edited before the first commit, new wording ("average difference") changed the meaning to a signed mean but gold answer stayed as mean absolute error. Restored intended meaning: "On average, how far was the forecast carbon intensity from the actual in 2025, in either direction?", gold SQL and expected (9.282) unchanged
+Found after first eval run (20261011T1950Z), that run is superseded but kept in eval/runs/ (no deleting runs)
+Rejected keeping the wording and accepting the signed answer (0.978), that was the agent's answer so it would move the test towards the model

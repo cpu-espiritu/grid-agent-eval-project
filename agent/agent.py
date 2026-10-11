@@ -111,6 +111,8 @@ class Agent:
             "attempts": attempts,
             "n_attempts": len(attempts),
             "error": reply.get("_error") or reply.get("_unparsed") if reply else None,
+            # raw last model reply, so a malformed final answer can be diagnosed
+            "final_reply": messages[-1]["content"] if messages[-1]["role"] == "assistant" else None,
             "usage": usage,
             "latency_s": round(time.time() - start, 2),
             **self.settings,
