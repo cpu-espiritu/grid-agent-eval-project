@@ -1,0 +1,2 @@
+id,category,question,expected,got,explanation,status,n_attempts,final_sql,last_error,failure_tag,notes
+J03,joins,What share of generation came from gas during the half-hour with the highest actual carbon intensity in 2025?,72.0 | 72.1,null,,no_answer,1,SELECT gm.percentage FROM generation_mix AS gm JOIN carbon_intensity AS ci USING (period_start_utc) WHERE gm.fuel = 'gas' AND ci.actual_gco2_per_kwh = (SELECT MAX(actual_gco2_per_kwh) FROM carbon_intensity),,,

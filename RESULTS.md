@@ -36,6 +36,39 @@ Failures:
 | A06      | Signed mean (0.978) instead of mean absolute error (9.282). Caused by the faulty question wording                                                                  | n/a (test set fault) |
 | D04      | `timezone('Europe/London', period_start_utc)` on the naive UTC column converts the wrong way, 52.37 vs 53.1                                                        | date handling        |
 
-### Official runs
+### Official runs (v1)
 
-Pending: 3 runs from a clean commit, reported as mean and range with the 95% CI of each.
+Three back-to-back runs of `python -m eval.run_agent`, all from commit `6163d6f`, identical code
+(`agent_code_sha256` 3b00b93c…), prompt v1, questions `43fffb53…` (after the A06 fix), gpt-6-luna, temperature = model default (1).
+
+| Run                         | Accuracy          | 95% CI              | Failed   |
+| --------------------------- | ----------------- | ------------------- | -------- |
+| `20261011T2003Z_gpt-6-luna` | 29/30 = 96.7%     | 90.0% to 100%       | J03      |
+| `20261011T2005Z_gpt-6-luna` | 30/30 = 100%      | 100% to 100%        | none     |
+| `20261011T2007Z_gpt-6-luna` | 28/30 = 93.3%     | 83.3% to 100%       | D03, D05 |
+| **Mean of 3**               | **87/90 = 96.7%** | range 93.3% to 100% |          |
+
+By category, summed over 3 runs: easy 18/18, aggregation 18/18, joins 17/18, date handling 16/18, ambiguous 18/18.
+27 of 30 questions were correct in all three runs. Mean SQL attempts per question ≈ 1.0, so retries were almost never needed.
+Tokens over 3 runs: 111,749 in / 20,324 out.
+
+n=30 is small: the interval on a single run is wide, and a 100% run has a degenerate 100–100% interval, which
+says nothing about questions outside the test set. The spread across runs (93.3–100%) comes from the model's
+sampling (temperature 1), separate from the uncertainty of having only 30 questions.
+
+Note: runs 2005Z and 2007Z record `"dirty": true`. That was a bug in the dirty check (it counted the earlier runs'
+untracked output folders), not a code change: commit and code hash match run 2003Z. Fixed afterwards by
+excluding `eval/runs/` from the check.
+
+Failures:
+
+| Run   | Question | What happened                                                                                                                                                                                                                | Tag             |
+| ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| 2003Z | J03      | First query was correct (both tied half-hours, 72.0 and 72.1), then the model sent another query to get the timestamps instead of answering. The v1 loop allows no queries after a successful one, so no answer was recorded | no final answer |
+| 2007Z | D03      | `timezone('Europe/London', period_start_utc)` on the naive UTC column converts the wrong way: 50 periods instead of 46                                                                                                       | date handling   |
+| 2007Z | D05      | First query gave the correct value (144.798), then the model sent a corrected query (its date bounds were off by an hour) instead of answering. Same loop limit as J03                                                       | no final answer |
+
+Patterns:
+
+- **no final answer** (2 here, probably 3 counting E05 in run 1): the model wants a follow-up query after a successful one. This is a limit of the v1 loop design, not wrong SQL. It's not one of the five planned tags.
+- **date handling** (1 here, plus D04 in run 1): the same wrong-way `timezone()` call on a naive UTC column both times.

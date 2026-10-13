@@ -31,7 +31,9 @@ def sha256_files(paths, root):
 def git_info():
     def git(*args):
         return subprocess.run(["git", *args], cwd=config.ROOT, capture_output=True, text=True).stdout.strip()
-    return {"sha": git("rev-parse", "HEAD"), "dirty": bool(git("status", "--porcelain"))}
+    # eval/runs/ is excluded: earlier runs' output folders would otherwise mark every later run dirty
+    return {"sha": git("rev-parse", "HEAD"),
+            "dirty": bool(git("status", "--porcelain", "--", ".", ":(exclude)eval/runs"))}
 
 
 def to_json(value):
